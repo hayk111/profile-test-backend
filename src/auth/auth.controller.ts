@@ -16,14 +16,14 @@ export class AuthController {
   }
 
   @Post('/register')
-  signUp(
+  register(
     @Body() createUserDto: CreateUserDto,
   ): Promise<{ accessToken: string }> {
     return this.authService.register(createUserDto);
   }
 
   @Post('/login')
-  signIn(
+  login(
     @Body() authCredentialsDto: AuthCredentialsDto,
   ): Promise<{ accessToken: string }> {
     return this.authService.login(authCredentialsDto);

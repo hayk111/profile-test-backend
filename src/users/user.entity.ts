@@ -16,15 +16,11 @@ export class User {
   email: string;
 
   @Column()
+  @Length(6, 50)
   password: string;
 
   @Column()
-  @Length(2, 25)
-  firstName: string;
-
-  @Column()
-  @Length(2, 25)
-  lastName: string;
+  fullName: string;
 
   @Column()
   role: string;

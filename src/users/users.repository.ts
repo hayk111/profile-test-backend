@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { omit } from 'lodash';
+import { omit, startCase, toLower } from 'lodash';
 import { Client as ClientEntity } from './client.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -16,13 +16,14 @@ export class UsersRepository extends Repository<ClientEntity> {
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<void> {
-    const { password } = createUserDto;
+    const { password, firstName, lastName } = createUserDto;
 
     const salt = bcrypt.genSaltSync();
     const hashedPassword = bcrypt.hashSync(password, salt);
 
     const user = this.create({
-      ...omit(createUserDto, 'password'),
+      ...omit(createUserDto, 'password', 'firstName', 'lastName'),
+      fullName: startCase(toLower(`${firstName} ${lastName}`)),
       password: hashedPassword,
     });
 
