@@ -4,32 +4,27 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
-import { User as UserEntity } from './user.entity';
 import * as bcrypt from 'bcrypt';
+import { omit } from 'lodash';
+import { Client as ClientEntity } from './client.entity';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
-export class UsersRepository extends Repository<UserEntity> {
+export class UsersRepository extends Repository<ClientEntity> {
   constructor(private dataSource: DataSource) {
-    super(UserEntity, dataSource.createEntityManager());
+    super(ClientEntity, dataSource.createEntityManager());
   }
 
-  async createUser(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-    console.log(
-      '🚀 ~ UsersRepository ~ createUser ~ authCredentialsDto',
-      authCredentialsDto,
-    );
-    const { email, password } = authCredentialsDto;
+  async createUser(createUserDto: CreateUserDto): Promise<void> {
+    const { password } = createUserDto;
 
     const salt = bcrypt.genSaltSync();
     const hashedPassword = bcrypt.hashSync(password, salt);
-    console.log(
-      '🚀 ~ UsersRepository ~ createUser ~ hashedPassword',
-      hashedPassword,
-    );
 
-    const user = this.create({ email, password: hashedPassword });
-    console.log('🚀 ~ UsersRepository ~ createUser ~ user', user);
+    const user = this.create({
+      ...omit(createUserDto, 'password'),
+      password: hashedPassword,
+    });
 
     try {
       await this.save(user);
