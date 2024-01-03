@@ -6,10 +6,13 @@ import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { UsersRepository } from '../users/users.repository';
 import { JwtPayload } from './jwt-payload.interface';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { PhotosRepository } from '../photos/photos.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(PhotosRepository)
+    private photosRepository: PhotosRepository,
     @InjectRepository(UsersRepository)
     private usersRepository: UsersRepository,
     private jwtService: JwtService,
@@ -18,7 +21,7 @@ export class AuthService {
   async register(
     createUserDto: CreateUserDto,
   ): Promise<{ accessToken: string }> {
-    await this.usersRepository.createUser(createUserDto);
+    await this.usersRepository.createUser(createUserDto, createUserDto.photos);
     const { email } = createUserDto;
     const accessToken = this.jwtService.sign({ email });
     return { accessToken };

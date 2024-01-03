@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersRepository } from '../users/users.repository';
+import { PhotosRepository } from '../photos/photos.repository';
 import { JwtStrategy } from './jwt-strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Client } from '../users/client.entity';
@@ -27,7 +28,7 @@ import { Photo } from '../photos/photo.entity';
     TypeOrmModule.forFeature([Client, Photo]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, UsersRepository],
+  providers: [AuthService, JwtStrategy, UsersRepository, PhotosRepository],
   exports: [JwtStrategy, PassportModule],
 })
 export class AuthModule {}

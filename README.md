@@ -13,7 +13,7 @@ $ yarn install
 Before running the app, you need to set up a PostgreSQL database. You can do this by starting a Docker container with the following command:
 
 ```bash
-$ docker run --name postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=profile-test -p 5432:5432 -d postgre
+$ docker run --name postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=profile-test -p 5432:5432 -d postgres
 ```
 
 ## Running the app
