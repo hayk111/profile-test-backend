@@ -76,7 +76,7 @@ export class UsersRepository extends Repository<ClientEntity> {
     } catch (error) {
       console.log('error:', error);
       if (error.code === '23505') {
-        // duplicate email
+        // duplicate email exception
         throw new ConflictException('email already exists');
       } else {
         throw new InternalServerErrorException();
@@ -84,18 +84,18 @@ export class UsersRepository extends Repository<ClientEntity> {
     }
   }
 
+  // An S3 client function to upload the buffer with the specified key
   private async uploadToS3(
     buffer: Buffer,
     key: string,
     contentType = 'image/jpeg',
   ): Promise<void> {
-    // Use the S3 client to upload the buffer with the specified key
     await this.s3
       .upload({
         Bucket: process.env.AWS_S3_BUCKET,
         Key: key,
         Body: buffer,
-        ContentType: contentType, // Change the content type based on your requirements
+        ContentType: contentType, // Specifies the mime type of the file
         ACL: 'public-read',
       })
       .promise();
