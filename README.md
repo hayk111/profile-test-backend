@@ -1,6 +1,16 @@
-## Description
+# Backend (profile-test-backend)
 
-NestJS API for the profile test app
+Project Overview:
+
+The "profile-test-backend" serves as the backend for the "profile-test" application. It handles user authentication, registration, and provides API endpoints for fetching and updating user profiles.
+
+## Technologies Used
+
+- NestJS: A progressive Node.js framework for building efficient, reliable and scalable server-side applications.
+
+- PostgreSQL: A powerful, open source object-relational database system.
+
+- Authentication: Implements secure authentication methods (e.g., JWT) for user sessions.
 
 ## Installation
 
