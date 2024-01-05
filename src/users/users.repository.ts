@@ -15,6 +15,7 @@ import { Client as ClientEntity } from './client.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PhotosRepository } from '../photos/photos.repository';
 import { Photo } from '../photos/photo.entity';
+import { UpdateAvatarDto } from '../users/dto/update-avatar.dto';
 
 @Injectable()
 export class UsersRepository extends Repository<ClientEntity> {
@@ -92,6 +93,30 @@ export class UsersRepository extends Repository<ClientEntity> {
         throw new InternalServerErrorException();
       }
     }
+  }
+
+  async updateAvatar(
+    userId: string,
+    updateAvatarDto: UpdateAvatarDto,
+  ): Promise<string> {
+    const foundUser = await this.findOneBy({ id: userId });
+    if (!foundUser) {
+      throw new BadRequestException('User not found');
+    }
+
+    const { avatar } = updateAvatarDto;
+    const s3Key = `photos/${uuid()}-${avatar.name}`;
+    await this.uploadToS3(
+      Buffer.from(avatar.base64Data, 'base64'),
+      s3Key,
+      avatar.type,
+    );
+
+    const newAvatar = `https://${process.env.AWS_S3_BUCKET}.s3.amazonaws.com/${s3Key}`;
+    foundUser.avatar = newAvatar;
+    await this.save(foundUser);
+
+    return newAvatar;
   }
 
   // An S3 client function to upload the buffer with the specified key

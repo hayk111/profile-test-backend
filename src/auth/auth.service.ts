@@ -6,7 +6,9 @@ import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { UsersRepository } from '../users/users.repository';
 import { JwtPayload } from './jwt-payload.interface';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UpdateAvatarDto } from '../users/dto/update-avatar.dto';
 import { PhotosRepository } from '../photos/photos.repository';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -41,5 +43,13 @@ export class AuthService {
     } else {
       throw new UnauthorizedException('Please check your login credentials');
     }
+  }
+
+  async updateAvatar(
+    user: User,
+    updateAvatarDto: UpdateAvatarDto,
+  ): Promise<string> {
+    const { id } = user;
+    return this.usersRepository.updateAvatar(id, updateAvatarDto);
   }
 }
