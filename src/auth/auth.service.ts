@@ -21,7 +21,7 @@ export class AuthService {
   async register(
     createUserDto: CreateUserDto,
   ): Promise<{ accessToken: string }> {
-    await this.usersRepository.createUser(createUserDto, createUserDto.photos);
+    await this.usersRepository.createUser(createUserDto);
     const { email } = createUserDto;
     const accessToken = this.jwtService.sign({ email });
     return { accessToken };

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -9,7 +10,7 @@ import { DataSource, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { omit, startCase, toLower } from 'lodash';
 import { v4 as uuid } from 'uuid';
-import * as multer from 'multer';
+
 import { Client as ClientEntity } from './client.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PhotosRepository } from '../photos/photos.repository';
@@ -33,11 +34,12 @@ export class UsersRepository extends Repository<ClientEntity> {
     });
   }
 
-  async createUser(
-    createUserDto: CreateUserDto,
-    photos: multer.Multer.File[],
-  ): Promise<void> {
-    const { password, firstName, lastName } = createUserDto;
+  async createUser(createUserDto: CreateUserDto): Promise<void> {
+    const { password, firstName, lastName, avatar, photos } = createUserDto;
+
+    if (photos?.length < 4) {
+      throw new BadRequestException('You must upload at least 4 photos');
+    }
 
     const salt = bcrypt.genSaltSync();
     const hashedPassword = bcrypt.hashSync(password, salt);
@@ -49,29 +51,37 @@ export class UsersRepository extends Repository<ClientEntity> {
     }) as unknown as ClientEntity;
 
     try {
+      if (avatar) {
+        const s3Key = `photos/${uuid()}-${avatar.name}`;
+        await this.uploadToS3(
+          Buffer.from(avatar.base64Data, 'base64'),
+          s3Key,
+          avatar.type,
+        );
+
+        user.avatar = `https://${process.env.AWS_S3_BUCKET}.s3.amazonaws.com/${s3Key}`;
+      }
+
       await this.save(user);
 
-      // Upload photos to S3 if any provided
-      if (photos && photos.length > 0) {
-        const photoEntities: Photo[] = [];
+      const photoEntities: Photo[] = [];
 
-        for (const photo of photos) {
-          const s3Key = `photos/${uuid()}-${photo.name}`;
-          await this.uploadToS3(
-            Buffer.from(photo.base64Data, 'base64'),
-            s3Key,
-            photo.type,
-          );
+      for (const photo of photos) {
+        const s3Key = `photos/${uuid()}-${photo.name}`;
+        await this.uploadToS3(
+          Buffer.from(photo.base64Data, 'base64'),
+          s3Key,
+          photo.type,
+        );
 
-          const photoEntity = this.photosRepository.create({
-            name: photo.name,
-            url: `https://${process.env.AWS_S3_BUCKET}.s3.amazonaws.com/${s3Key}`,
-            user: user.id,
-          });
+        const photoEntity = this.photosRepository.create({
+          name: photo.name ?? uuid(),
+          url: `https://${process.env.AWS_S3_BUCKET}.s3.amazonaws.com/${s3Key}`,
+          user: user.id,
+        });
 
-          await this.photosRepository.save(photoEntity);
-          photoEntities.push(photoEntity);
-        }
+        await this.photosRepository.save(photoEntity);
+        photoEntities.push(photoEntity);
       }
     } catch (error) {
       console.log('error:', error);

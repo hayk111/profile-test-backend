@@ -1,4 +1,6 @@
 import {
+  ArrayNotEmpty,
+  IsArray,
   IsEmail,
   IsString,
   Length,
@@ -6,7 +8,7 @@ import {
   MaxLength,
   Matches,
 } from 'class-validator';
-import { Photo } from '../../photos/photo.entity';
+import * as multer from 'multer';
 
 export class CreateUserDto {
   @IsEmail()
@@ -33,7 +35,9 @@ export class CreateUserDto {
 
   active: boolean;
 
-  avatar: string;
+  avatar: multer.Multer.File;
 
-  photos: Photo[];
+  @IsArray()
+  @ArrayNotEmpty()
+  photos: multer.Multer.File[];
 }
