@@ -1,4 +1,5 @@
 import { ValidationPipe, Logger } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestFactory } from '@nestjs/core';
 import * as express from 'express';
 import { AppModule } from './app.module';
@@ -13,6 +14,19 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ forbidUnknownValues: false }));
   app.useGlobalInterceptors(new TransformInterceptor());
+
+  // Swagger config
+  const swaggerOptions = new DocumentBuilder()
+    .setTitle('Profile Test API')
+    .setDescription(
+      "Profile Test API allows you to register, login and view user's profile info.",
+    )
+    .setVersion('1.0')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, swaggerOptions);
+  SwaggerModule.setup('api', app, document);
+
   const port = 4000;
   await app.listen(port);
   logger.log(`Application listening on port ${port}`);
